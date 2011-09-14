@@ -8,27 +8,11 @@ class Datesplit
   end
 
   def start_date
-    expressions.each do |expression, returns|
-      m = @date_string.match(expression)
-      if m
-        @start_date = Date.parse("#{m.captures[returns.index(:month_only) || returns.index(:month_one)]} #{m.captures[returns.index(:day_one)]} #{m.captures[returns.index(:year_only) || returns.index(:year_one)]}")
-        break
-      end
-    end
-    raise ParseError, "Can't process #{@date_string}" unless @start_date
-    return @start_date
+    parse[:start_date]
   end
 
   def end_date
-    expressions.each do |expression, returns|
-      m = @date_string.match(expression)
-      if m
-        @end_date = Date.parse("#{m.captures[returns.index(:month_only) || returns.index(:month_two) ]} #{m.captures[returns.index(:day_two)]} #{m.captures[returns.index(:year_only) || returns.index(:year_two)]}")
-        break
-      end
-    end
-    raise ParseError, "Can't process #{@date_string}" unless @end_date
-    return @end_date
+    parse[:end_date]
   end
 
   def number_of_days
@@ -36,6 +20,20 @@ class Datesplit
   end
 
   private
+  def parse
+    return @result if @result
+    expressions.each do |expression, returns|
+      m = @date_string.match(expression)
+      if m
+        return @result = {
+          :start_date => Date.parse("#{m.captures[returns.index(:month_only) || returns.index(:month_one)]} #{m.captures[returns.index(:day_one)]} #{m.captures[returns.index(:year_only) || returns.index(:year_one)]}"),
+          :end_date => Date.parse("#{m.captures[returns.index(:month_only) || returns.index(:month_two) ]} #{m.captures[returns.index(:day_two)]} #{m.captures[returns.index(:year_only) || returns.index(:year_two)]}")
+        }
+      end
+    end
+    raise ParseError, "Can't process #{@date_string}"
+  end
+
     def expressions
       {
 
